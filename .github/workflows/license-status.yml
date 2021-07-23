@@ -1,0 +1,35 @@
+# Updates the license cache, then checks that all dependencies have licenses specified in .licensed.yml
+# Based on example taken from https://github.com/jonabc/setup-licensed/blob/main/.github/workflows/update_licenses.yaml
+
+name: Check and Update Licenses Status
+
+on: pull_request
+
+jobs:
+  licensed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # prefer to use a full fetch for licensed workflows
+
+      - run: npm install --production
+
+      - uses: jonabc/setup-licensed@v1
+        with:
+          version: '2.x'
+      - id: licensed
+        uses: jonabc/licensed-ci@v1
+        with:
+          workflow: branch
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/github-script@0.2.0
+        if: always() && steps.licensed.outputs.pr_number
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.issues.createComment({
+              ...context.repo,
+              issue_number: ${{ steps.licensed.outputs.pr_number }}
+              body: 'Auto-update license files'
+            })

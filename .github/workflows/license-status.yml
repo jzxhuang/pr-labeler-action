@@ -1,5 +1,5 @@
 # Updates the license cache, then checks that all dependencies have licenses specified in .licensed.yml
-# Based on example taken from https://github.com/jonabc/setup-licensed/blob/main/.github/workflows/update_licenses.yaml
+# Uses https://github.com/jonabc/licensed-ci
 
 name: Check and Update Licenses Status
 
@@ -23,13 +23,3 @@ jobs:
         with:
           workflow: branch
           github_token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/github-script@0.2.0
-        if: always() && steps.licensed.outputs.pr_number
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            github.issues.createComment({
-              ...context.repo,
-              issue_number: ${{ steps.licensed.outputs.pr_number }}
-              body: 'Auto-update license files'
-            })
